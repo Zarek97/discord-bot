@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generator Drużyn PRO</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Poppins', sans-serif;
+    }
+    body {
+        background-color: #0f172a;
+        background-image: 
+            radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+            radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+            radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+        background-attachment: fixed;
+        color: #ffffff;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    .app-container {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 40px;
+        width: 100%;
+        max-width: 600px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.5rem;
+        background: linear-gradient(to right, #38bdf8, #818cf8, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }
+    .input-group {
+        margin-bottom: 25px;
+    }
+    label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 1rem;
+        color: #cbd5e1;
+        font-weight: 600;
+    }
+    input[type="number"] {
+        width: 100%;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 15px;
+        color: #fff;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+    input[type="number"]:focus {
+        border-color: #818cf8;
+        box-shadow: 0 0 15px rgba(129, 140, 248, 0.3);
+    }
+    .gracze-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+        max-height: 220px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+    .gracz-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 12px;
+        border-radius: 8px;
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: 0.3s;
+        text-align: center;
+        user-select: none;
+    }
+    .gracz-btn.active {
+        background: rgba(56, 189, 248, 0.2);
+        border-color: #38bdf8;
+        color: #ffffff;
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+    button.akcja {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+        background-size: 200% 200%;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.2rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.4s ease;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-top: 10px;
+    }
+    button.akcja:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.5);
+    }
+    #wynik {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    .druzyna-karta {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 20px;
+        animation: fadeUp 0.5s ease-out forwards;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    .druzyna-tytul {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #38bdf8;
+        margin-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 10px;
+    }
+    .czlonek {
+        padding: 8px 0;
+        font-size: 1rem;
+        color: #f1f5f9;
+        display: flex;
+        align-items: center;
+    }
+    .czlonek::before {
+        content: "•";
+        color: #a855f7;
+        font-weight: bold;
+        display: inline-block;
+        width: 1em;
+        margin-right: 5px;
+    }
+    .error-msg {
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+        text-align: center;
+        font-weight: 600;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    @keyframes fadeUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+</head>
+<body>
+<div class="app-container">
+    <h1>Generator Drużyn</h1>
+    
+    <div class="input-group">
+        <label>Wybierz graczy (kliknij, by pominąć):</label>
+        <div id="lista-graczy" class="gracze-grid">Ładowanie graczy z Discorda...</div>
+    </div>
+    
+    <div class="input-group">
+        <label for="liczba">Liczba drużyn:</label>
+        <input type="number" id="liczba" min="1" placeholder="Np. 2">
+    </div>
+    
+    <button class="akcja" onclick="losuj()">Losuj drużyny</button>
+    
+    <div id="wynik"></div>
+</div>
+
+<script>
+    let wybraniGracze = [];
+    
+    fetch('/api/gracze')
+        .then(response => response.json())
+        .then(data => {
+            const grid = document.getElementById('lista-graczy');
+            grid.innerHTML = '';
+            
+            if (data.length === 0) {
+                grid.innerHTML = '<div class="error-msg">Nie znaleziono graczy z tą rolą.</div>';
+                return;
+            }
+            
+            data.forEach(gracz => {
+                const btn = document.createElement('div');
+                btn.className = 'gracz-btn active';
+                btn.textContent = gracz;
+                wybraniGracze.push(gracz);
+                
+                btn.onclick = () => {
+                    if (btn.classList.contains('active')) {
+                        btn.classList.remove('active');
+                        wybraniGracze = wybraniGracze.filter(g => g !== gracz);
+                    } else {
+                        btn.classList.add('active');
+                        wybraniGracze.push(gracz);
+                    }
+                };
+                grid.appendChild(btn);
+            });
+        })
+        .catch(error => {
+            document.getElementById('lista-graczy').innerHTML = '<div class="error-msg">Błąd pobierania danych.</div>';
+        });
+        
+    function losuj() {
+        const wynikDiv = document.getElementById('wynik');
+        wynikDiv.innerHTML = '';
+        
+        let osoby = [...wybraniGracze];
+        
+        if (osoby.length === 0) {
+            pokazBlad('Wybierz przynajmniej jedną osobę.');
+            return;
+        }
+        
+        const liczbaInput = document.getElementById('liczba').value;
+        const liczbaDruzyn = parseInt(liczbaInput);
+        
+        if (isNaN(liczbaDruzyn) || liczbaDruzyn < 1) {
+            pokazBlad('Wprowadź poprawną liczbę drużyn.');
+            return;
+        }
+        
+        if (liczbaDruzyn > osoby.length) {
+            pokazBlad('Liczba drużyn nie może być większa niż liczba zaznaczonych osób.');
+            return;
+        }
+        
+        for (let i = osoby.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [osoby[i], osoby[j]] = [osoby[j], osoby[i]];
+        }
+        
+        const druzyny = Array.from({ length: liczbaDruzyn }, () => []);
+        
+        osoby.forEach((osoba, index) => {
+            druzyny[index % liczbaDruzyn].push(osoba);
+        });
+        
+        druzyny.forEach((druzyna, i) => {
+            const karta = document.createElement('div');
+            karta.className = 'druzyna-karta';
+            karta.style.animationDelay = `${i * 0.1}s`;
+            
+            const tytul = document.createElement('div');
+            tytul.className = 'druzyna-tytul';
+            tytul.textContent = `Drużyna ${i + 1}`;
+            karta.appendChild(tytul);
+            
+            druzyna.forEach(czlonek => {
+                const element = document.createElement('div');
+                element.className = 'czlonek';
+                element.textContent = czlonek;
+                karta.appendChild(element);
+            });
+            
+            wynikDiv.appendChild(karta);
+        });
+    }
+
+    function pokazBlad(wiadomosc) {
+        const wynikDiv = document.getElementById('wynik');
+        const blad = document.createElement('div');
+        blad.className = 'error-msg';
+        blad.textContent = wiadomosc;
+        wynikDiv.appendChild(blad);
+    }
+</script>
+</body>
+</html>
