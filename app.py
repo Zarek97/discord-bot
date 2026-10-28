@@ -1,82 +1,82 @@
 import os
-import requests
-import concurrent.futures
+import threading
+import asyncio
+import discord
 from flask import Flask, jsonify, render_template
 
 template_dir = 'templates' if os.path.exists(os.path.join(os.path.dirname(__file__), 'templates', 'index.html')) else '.'
 app = Flask(__name__, template_folder=template_dir)
 
 TOKEN = os.environ.get('DISCORD_TOKEN')
-GUILD_ID = os.environ.get('GUILD_ID')
+guild_env = os.environ.get('GUILD_ID', '')
+GUILD_ID = int(guild_env) if guild_env.isdigit() else None
 ROLE_NAME = 'League of Legends'
 
-@app.route('/api/gracze')
-def get_gracze():
-    if not TOKEN or not GUILD_ID:
-        return jsonify([])
+intents = discord.Intents.default()
+intents.members = True
+intents.voice_states = True
 
-    headers = {
-        'Authorization': f'Bot {TOKEN}'
-    }
-    
-    roles_url = f'https://discord.com/api/v10/guilds/{GUILD_ID}/roles'
-    try:
-        roles_res = requests.get(roles_url, headers=headers, timeout=5)
-        if roles_res.status_code != 200:
-            return jsonify([])
-        roles = roles_res.json()
-    except Exception:
-        return jsonify([])
+client = discord.Client(intents=intents)
 
-    target_role_id = None
-    for r in roles:
-        if r.get('name', '').lower() == ROLE_NAME.lower():
-            target_role_id = r.get('id')
+def start_bot():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(client.start(TOKEN))
+
+if TOKEN:
+    bot_thread = threading.Thread(target=start_bot, daemon=True)
+    bot_thread.start()
+
+@app.route('/api/dane')
+def get_dane():
+    if not client.is_ready():
+        return jsonify({'lol_gracze': [], 'kanaly_glosowe': [], 'ready': False})
+
+    guild = None
+    if GUILD_ID:
+        guild = client.get_guild(GUILD_ID)
+    if not guild and client.guilds:
+        guild = client.guilds[0]
+
+    if not guild:
+        return jsonify({'lol_gracze': [], 'kanaly_glosowe': [], 'ready': True})
+
+    lol_role = None
+    for r in guild.roles:
+        if r.name.lower() == ROLE_NAME.lower():
+            lol_role = r
             break
-            
-    if not target_role_id:
-        return jsonify([])
-        
-    members_url = f'https://discord.com/api/v10/guilds/{GUILD_ID}/members?limit=1000'
-    try:
-        members_res = requests.get(members_url, headers=headers, timeout=10)
-        if members_res.status_code != 200:
-            return jsonify([])
-        members = members_res.json()
-    except Exception:
-        return jsonify([])
 
-    target_members = []
-    for m in members:
-        if target_role_id in m.get('roles', []):
-            nick = m.get('nick') or m.get('user', {}).get('global_name') or m.get('user', {}).get('username')
-            user_id = m.get('user', {}).get('id')
-            if nick and user_id:
-                target_members.append({'id': user_id, 'name': nick})
+    lol_gracze = []
+    if lol_role:
+        for member in guild.members:
+            if not member.bot and lol_role in member.roles:
+                lol_gracze.append({
+                    'id': str(member.id),
+                    'name': member.display_name
+                })
 
-    def check_voice(user):
-        in_voice = False
-        try:
-            vs_res = requests.get(
-                f'https://discord.com/api/v10/guilds/{GUILD_ID}/voice-states/{user["id"]}',
-                headers=headers,
-                timeout=3
-            )
-            if vs_res.status_code == 200:
-                in_voice = True
-        except Exception:
-            in_voice = False
-        return {
-            'id': user['id'],
-            'name': user['name'],
-            'in_voice': in_voice
-        }
+    lol_gracze.sort(key=lambda x: x['name'].lower())
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        gracze = list(executor.map(check_voice, target_members))
+    kanaly_glosowe = []
+    for ch in guild.voice_channels:
+        ludzie = [
+            {'id': str(m.id), 'name': m.display_name}
+            for m in ch.members if not m.bot
+        ]
+        if ludzie:
+            ludzie.sort(key=lambda x: x['name'].lower())
+            kanaly_glosowe.append({
+                'id': str(ch.id),
+                'nazwa': ch.name,
+                'gracze': ludzie
+            })
 
-    gracze.sort(key=lambda x: x['name'].lower())
-    return jsonify(gracze)
+    return jsonify({
+        'lol_gracze': lol_gracze,
+        'kanaly_glosowe': kanaly_glosowe,
+        'ready': True
+    })
 
 @app.route('/')
 def home():

@@ -24,7 +24,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 20px;
+        padding: 25px;
     }
     .app-container {
         background: rgba(255, 255, 255, 0.03);
@@ -34,7 +34,7 @@
         border-radius: 24px;
         padding: 35px;
         width: 100%;
-        max-width: 820px;
+        max-width: 1050px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
     h1 {
@@ -46,28 +46,40 @@
         -webkit-text-fill-color: transparent;
         font-weight: 800;
     }
-    .input-group {
-        margin-bottom: 20px;
+    .columns-container {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 25px;
+        margin-bottom: 25px;
     }
-    .section-header {
+    @media (max-width: 850px) {
+        .columns-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    .panel-box {
+        background: rgba(15, 23, 42, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+    }
+    .panel-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding-bottom: 8px;
     }
-    label {
-        font-size: 0.95rem;
-        color: #cbd5e1;
-        font-weight: 600;
-    }
-    .counter {
-        font-size: 0.85rem;
-        color: #38bdf8;
-        font-weight: 600;
+    .panel-header h2 {
+        font-size: 1.05rem;
+        color: #e2e8f0;
+        font-weight: 700;
     }
     .quick-actions {
         display: flex;
-        flex-wrap: wrap;
         gap: 8px;
         margin-bottom: 12px;
     }
@@ -75,24 +87,16 @@
         background: rgba(255, 255, 255, 0.06);
         border: 1px solid rgba(255, 255, 255, 0.12);
         color: #cbd5e1;
-        padding: 7px 13px;
+        padding: 6px 12px;
         border-radius: 8px;
-        font-size: 0.82rem;
+        font-size: 0.8rem;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: 0.2s;
     }
     .action-btn:hover {
         background: rgba(255, 255, 255, 0.15);
         color: #ffffff;
-    }
-    .action-btn.voice-btn {
-        background: rgba(34, 197, 94, 0.12);
-        border-color: rgba(34, 197, 94, 0.35);
-        color: #4ade80;
-    }
-    .action-btn.voice-btn:hover {
-        background: rgba(34, 197, 94, 0.22);
     }
     .gracze-grid {
         display: grid;
@@ -100,23 +104,61 @@
         gap: 8px;
         max-height: 380px;
         overflow-y: auto;
-        padding-right: 6px;
+        padding-right: 5px;
+    }
+    .voice-channels-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 420px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+    .voice-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 10px;
+        padding: 12px;
+    }
+    .voice-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .voice-card-title {
+        font-size: 0.9rem;
+        color: #4ade80;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .channel-select-btn {
+        background: rgba(74, 222, 128, 0.1);
+        border: 1px solid rgba(74, 222, 128, 0.3);
+        color: #4ade80;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .channel-select-btn:hover {
+        background: rgba(74, 222, 128, 0.2);
     }
     .gracz-btn {
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 9px 10px;
+        padding: 8px 10px;
         border-radius: 8px;
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.6);
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: 0.2s;
         text-align: center;
         user-select: none;
-        font-size: 0.88rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
+        font-size: 0.85rem;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -132,9 +174,21 @@
         box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
         font-weight: 600;
     }
-    .voice-tag {
-        font-size: 0.75rem;
-        color: #4ade80;
+    .control-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .counter-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 5px;
+    }
+    .counter {
+        font-size: 0.95rem;
+        color: #38bdf8;
+        font-weight: 700;
     }
     input[type="number"] {
         width: 100%;
@@ -144,7 +198,7 @@
         padding: 13px;
         color: #fff;
         font-size: 1rem;
-        transition: all 0.3s ease;
+        transition: 0.3s;
         outline: none;
     }
     input[type="number"]:focus {
@@ -153,7 +207,7 @@
     }
     button.losuj-btn {
         width: 100%;
-        padding: 15px;
+        padding: 16px;
         background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
         background-size: 200% 200%;
         color: white;
@@ -162,10 +216,9 @@
         font-size: 1.15rem;
         font-weight: 800;
         cursor: pointer;
-        transition: all 0.4s ease;
+        transition: 0.4s;
         text-transform: uppercase;
         letter-spacing: 2px;
-        margin-top: 5px;
     }
     button.losuj-btn:hover {
         background-position: right center;
@@ -210,6 +263,12 @@
         width: 1em;
         margin-right: 5px;
     }
+    .info-msg {
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.85rem;
+        text-align: center;
+        padding: 20px 0;
+    }
     .error-msg {
         color: #ef4444;
         background: rgba(239, 68, 68, 0.1);
@@ -243,112 +302,155 @@
 <div class="app-container">
     <h1>Generator Drużyn</h1>
     
-    <div class="input-group">
-        <div class="section-header">
-            <label>Wybierz graczy do losowania:</label>
-            <span id="counter" class="counter">Wybrano: 0</span>
+    <div class="columns-container">
+        <div class="panel-box">
+            <div class="panel-header">
+                <h2>Rola: League of Legends</h2>
+            </div>
+            <div class="quick-actions">
+                <button type="button" class="action-btn" onclick="zaznaczWszystkichLol()">Zaznacz wszystkich</button>
+                <button type="button" class="action-btn" onclick="odznaczWszystkichLol()">Odznacz</button>
+            </div>
+            <div id="lista-lol" class="gracze-grid">Ładowanie graczy...</div>
         </div>
-        
-        <div class="quick-actions">
-            <button type="button" class="action-btn voice-btn" onclick="zaznaczGlosowych()">🔊 Tylko na kanale głosowym</button>
-            <button type="button" class="action-btn" onclick="zaznaczWszystkich()">Zaznacz wszystkich</button>
-            <button type="button" class="action-btn" onclick="odznaczWszystkich()">Odznacz wszystkich</button>
+
+        <div class="panel-box">
+            <div class="panel-header">
+                <h2>Aktywne kanały głosowe</h2>
+            </div>
+            <div id="lista-glosowe" class="voice-channels-list">Ładowanie kanałów...</div>
         </div>
-        
-        <div id="lista-graczy" class="gracze-grid">Ładowanie graczy z Discorda...</div>
     </div>
-    
-    <div class="input-group">
-        <label for="liczba">Liczba drużyn:</label>
-        <input type="number" id="liczba" min="1" placeholder="Np. 2" style="margin-top: 8px;">
+
+    <div class="control-panel">
+        <div class="counter-bar">
+            <label for="liczba" style="font-weight:600; color:#cbd5e1;">Liczba drużyn:</label>
+            <span id="counter" class="counter">Wybrano łącznie: 0 osób</span>
+        </div>
+        <input type="number" id="liczba" min="1" placeholder="Np. 2">
+        <button class="losuj-btn" onclick="losuj()">Losuj drużyny</button>
     </div>
-    
-    <button class="losuj-btn" onclick="losuj()">Losuj drużyny</button>
     
     <div id="wynik"></div>
 </div>
 
 <script>
-    let wszyscyGracze = [];
+    let graczeLolData = [];
+    let kanalyGlosoweData = [];
     let wybraniGracze = new Set();
-    
-    fetch('/api/gracze')
-        .then(response => response.json())
-        .then(data => {
-            const grid = document.getElementById('lista-graczy');
-            grid.innerHTML = '';
-            
-            if (!Array.isArray(data) || data.length === 0) {
-                grid.innerHTML = '<div class="error-msg">Nie znaleziono graczy z tą rolą.</div>';
-                return;
-            }
-            
-            wszyscyGracze = data.sort((a, b) => a.name.localeCompare(b.name, 'pl', { sensitivity: 'base' }));
-            
-            wszyscyGracze.forEach(gracz => {
-                const btn = document.createElement('div');
-                btn.className = 'gracz-btn';
-                btn.dataset.id = gracz.id;
-                
-                if (gracz.in_voice) {
-                    btn.innerHTML = `<span class="voice-tag">🔊</span><span>${gracz.name}</span>`;
-                } else {
-                    btn.textContent = gracz.name;
+
+    function pobierzDane() {
+        fetch('/api/dane')
+            .then(res => res.json())
+            .then(data => {
+                if (data.ready === false) {
+                    setTimeout(pobierzDane, 1500);
+                    return;
                 }
-                
-                btn.onclick = () => {
-                    if (wybraniGracze.has(gracz.name)) {
-                        wybraniGracze.delete(gracz.name);
-                        btn.classList.remove('active');
-                    } else {
-                        wybraniGracze.add(gracz.name);
-                        btn.classList.add('active');
-                    }
-                    aktualizujLicznik();
-                };
+                graczeLolData = data.lol_gracze || [];
+                kanalyGlosoweData = data.kanaly_glosowe || [];
+                renderujWszystko();
+            })
+            .catch(() => {
+                document.getElementById('lista-lol').innerHTML = '<div class="error-msg">Błąd pobierania danych.</div>';
+                document.getElementById('lista-glosowe').innerHTML = '<div class="error-msg">Błąd pobierania danych.</div>';
+            });
+    }
+
+    function renderujWszystko() {
+        renderujLol();
+        renderujGlosowe();
+        aktualizujLicznik();
+    }
+
+    function renderujLol() {
+        const grid = document.getElementById('lista-lol');
+        grid.innerHTML = '';
+        if (graczeLolData.length === 0) {
+            grid.innerHTML = '<div class="info-msg">Brak osób z rolą League of Legends.</div>';
+            return;
+        }
+
+        graczeLolData.forEach(gracz => {
+            const btn = document.createElement('div');
+            btn.className = 'gracz-btn' + (wybraniGracze.has(gracz.name) ? ' active' : '');
+            btn.textContent = gracz.name;
+            btn.onclick = () => toggleGracz(gracz.name);
+            grid.appendChild(btn);
+        });
+    }
+
+    function renderujGlosowe() {
+        const container = document.getElementById('lista-glosowe');
+        container.innerHTML = '';
+        if (kanalyGlosoweData.length === 0) {
+            container.innerHTML = '<div class="info-msg">Nikt aktualnie nie przebywa na kanałach głosowych.</div>';
+            return;
+        }
+
+        kanalyGlosoweData.forEach(kanal => {
+            const card = document.createElement('div');
+            card.className = 'voice-card';
+
+            const header = document.createElement('div');
+            header.className = 'voice-card-header';
+
+            const title = document.createElement('div');
+            title.className = 'voice-card-title';
+            title.innerHTML = `🔊 ${kanal.nazwa}`;
+
+            const addAllBtn = document.createElement('button');
+            addAllBtn.className = 'channel-select-btn';
+            addAllBtn.textContent = '+ Cały kanał';
+            addAllBtn.onclick = () => {
+                kanal.gracze.forEach(g => wybraniGracze.add(g.name));
+                renderujWszystko();
+            };
+
+            header.appendChild(title);
+            header.appendChild(addAllBtn);
+            card.appendChild(header);
+
+            const grid = document.createElement('div');
+            grid.className = 'gracze-grid';
+            grid.style.maxHeight = 'none';
+
+            kanal.gracze.forEach(gracz => {
+                const btn = document.createElement('div');
+                btn.className = 'gracz-btn' + (wybraniGracze.has(gracz.name) ? ' active' : '');
+                btn.textContent = gracz.name;
+                btn.onclick = () => toggleGracz(gracz.name);
                 grid.appendChild(btn);
             });
-            aktualizujLicznik();
-        })
-        .catch(error => {
-            document.getElementById('lista-graczy').innerHTML = '<div class="error-msg">Błąd pobierania danych.</div>';
+
+            card.appendChild(grid);
+            container.appendChild(card);
         });
+    }
+
+    function toggleGracz(nazwa) {
+        if (wybraniGracze.has(nazwa)) {
+            wybraniGracze.delete(nazwa);
+        } else {
+            wybraniGracze.add(nazwa);
+        }
+        renderujWszystko();
+    }
+
+    function zaznaczWszystkichLol() {
+        graczeLolData.forEach(g => wybraniGracze.add(g.name));
+        renderujWszystko();
+    }
+
+    function odznaczWszystkichLol() {
+        graczeLolData.forEach(g => wybraniGracze.delete(g.name));
+        renderujWszystko();
+    }
 
     function aktualizujLicznik() {
-        document.getElementById('counter').textContent = `Wybrano: ${wybraniGracze.size}`;
+        document.getElementById('counter').textContent = `Wybrano łącznie: ${wybraniGracze.size} osób`;
     }
 
-    function zaznaczGlosowych() {
-        wybraniGracze.clear();
-        const przyciski = document.querySelectorAll('.gracz-btn');
-        wszyscyGracze.forEach((gracz, index) => {
-            const btn = przyciski[index];
-            if (gracz.in_voice) {
-                wybraniGracze.add(gracz.name);
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-        });
-        aktualizujLicznik();
-    }
-
-    function zaznaczWszystkich() {
-        wybraniGracze.clear();
-        const przyciski = document.querySelectorAll('.gracz-btn');
-        wszyscyGracze.forEach((gracz, index) => {
-            wybraniGracze.add(gracz.name);
-            przyciski[index].classList.add('active');
-        });
-        aktualizujLicznik();
-    }
-
-    function odznaczWszystkich() {
-        wybraniGracze.clear();
-        document.querySelectorAll('.gracz-btn').forEach(btn => btn.classList.remove('active'));
-        aktualizujLicznik();
-    }
-        
     function losuj() {
         const wynikDiv = document.getElementById('wynik');
         wynikDiv.innerHTML = '';
@@ -356,7 +458,7 @@
         let osoby = Array.from(wybraniGracze);
         
         if (osoby.length === 0) {
-            pokazBlad('Wybierz przynajmniej jedną osobę.');
+            pokazBlad('Wybierz przynajmniej jedną osobę do losowania.');
             return;
         }
         
@@ -412,6 +514,8 @@
         blad.textContent = wiadomosc;
         wynikDiv.appendChild(blad);
     }
+
+    pobierzDane();
 </script>
 </body>
 </html>
