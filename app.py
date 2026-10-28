@@ -56,8 +56,6 @@ def get_dane():
         members = []
 
     lol_gracze = []
-    lol_ids = set()
-
     if target_role_id and isinstance(members, list):
         for m in members:
             user_data = m.get('user') or {}
@@ -68,7 +66,6 @@ def get_dane():
                 nick = m.get('nick') or user_data.get('global_name') or user_data.get('username')
                 if nick and uid:
                     lol_gracze.append({'id': uid, 'name': str(nick)})
-                    lol_ids.add(uid)
 
     lol_gracze.sort(key=lambda x: x['name'].lower())
 
@@ -99,17 +96,15 @@ def get_dane():
 
                     uid = str(wm.get('id', ''))
                     nick = wm.get('nick') or wm.get('username') or 'Gracz'
-                    has_role = uid in lol_ids
 
                     ch_map[cid]['gracze'].append({
                         'id': uid,
-                        'name': str(nick),
-                        'has_role': has_role
+                        'name': str(nick)
                     })
 
             for ch in ch_map.values():
                 if ch['gracze']:
-                    ch['gracze'].sort(key=lambda x: (not x['has_role'], x['name'].lower()))
+                    ch['gracze'].sort(key=lambda x: x['name'].lower())
                     kanaly_glosowe.append(ch)
         else:
             widget_potrzebny = True
