@@ -32,7 +32,7 @@
         -webkit-backdrop-filter: blur(16px);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 20px;
-        padding: 30px;
+        padding: 25px 30px;
         width: 100%;
         max-width: 1150px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
@@ -41,7 +41,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 25px;
+        margin-bottom: 20px;
     }
     h1 {
         font-size: 2.1rem;
@@ -68,7 +68,7 @@
         display: grid;
         grid-template-columns: 1.35fr 1fr;
         gap: 20px;
-        margin-bottom: 25px;
+        margin-bottom: 20px;
     }
     @media (max-width: 900px) {
         .columns-container {
@@ -106,7 +106,7 @@
         background: rgba(15, 23, 42, 0.7);
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 8px;
-        padding: 8px 12px;
+        padding: 9px 12px;
         color: #fff;
         font-size: 0.85rem;
         margin-bottom: 12px;
@@ -132,25 +132,25 @@
     }
     .gracze-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
         gap: 8px;
         max-height: 420px;
         overflow-y: auto;
         padding-right: 6px;
     }
     .gracz-btn {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.09);
-        padding: 10px 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 10px 10px;
         border-radius: 8px;
         color: #cbd5e1;
         cursor: pointer;
         transition: all 0.15s ease;
         text-align: center;
         user-select: none;
-        font-size: 0.82rem;
+        font-size: 0.84rem;
         font-weight: 500;
-        line-height: 1.3;
+        line-height: 1.35;
         min-height: 44px;
         display: flex;
         align-items: center;
@@ -163,23 +163,23 @@
         border-color: rgba(255, 255, 255, 0.2);
     }
     .gracz-btn.active {
-        background: rgba(56, 189, 248, 0.22);
+        background: rgba(56, 189, 248, 0.25);
         border-color: #38bdf8;
         color: #38bdf8;
         box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
         font-weight: 700;
     }
     .gracz-btn.disabled {
-        opacity: 0.4;
+        opacity: 0.35;
         cursor: not-allowed;
-        background: rgba(0, 0, 0, 0.25);
-        border-color: rgba(255, 255, 255, 0.03);
+        background: rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.04);
         color: #94a3b8;
     }
     .gracz-btn.disabled:hover {
-        background: rgba(0, 0, 0, 0.25);
+        background: rgba(0, 0, 0, 0.3);
         color: #94a3b8;
-        border-color: rgba(255, 255, 255, 0.03);
+        border-color: rgba(255, 255, 255, 0.04);
     }
     .voice-channels-list {
         display: flex;
@@ -318,16 +318,15 @@
         text-align: center;
         padding: 25px 0;
     }
-    .error-msg {
-        color: #ef4444;
-        background: rgba(239, 68, 68, 0.1);
-        padding: 10px;
+    .hint-box {
+        background: rgba(234, 179, 8, 0.12);
+        border: 1px solid rgba(234, 179, 8, 0.3);
+        color: #fde047;
+        font-size: 0.82rem;
+        padding: 12px;
         border-radius: 8px;
-        margin-top: 12px;
+        line-height: 1.45;
         text-align: center;
-        font-weight: 600;
-        font-size: 0.85rem;
-        border: 1px solid rgba(239, 68, 68, 0.2);
     }
     @keyframes fadeUp {
         to {
@@ -402,12 +401,12 @@
                 lolGraczeNazwy = new Set(graczeLolData.map(g => g.name));
 
                 renderujLol();
-                renderujGlosowe();
+                renderujGlosowe(data.widget_potrzebny);
                 aktualizujLicznik();
             })
             .catch(() => {
-                document.getElementById('lista-lol').innerHTML = '<div class="error-msg">Błąd pobierania danych.</div>';
-                document.getElementById('lista-glosowe').innerHTML = '<div class="error-msg">Błąd pobierania danych.</div>';
+                document.getElementById('lista-lol').innerHTML = '<div class="info-msg">Nie udało się pobrać danych. Spróbuj kliknąć Odśwież.</div>';
+                document.getElementById('lista-glosowe').innerHTML = '<div class="info-msg">Nie udało się pobrać danych. Spróbuj kliknąć Odśwież.</div>';
             });
     }
 
@@ -438,9 +437,18 @@
         renderujLol();
     }
 
-    function renderujGlosowe() {
+    function renderujGlosowe(widgetPotrzebny) {
         const container = document.getElementById('lista-glosowe');
         container.innerHTML = '';
+
+        if (widgetPotrzebny) {
+            container.innerHTML = `
+                <div class="hint-box">
+                    <b>Włącz widżet Discorda:</b><br>
+                    Na Discordzie wejdź w <b>Ustawienia serwera &rarr; Widżet</b> i przesuń suwak na <b>Włącz widżet serwera</b>, aby widzieć kanały głosowe.
+                </div>`;
+            return;
+        }
 
         if (kanalyGlosoweData.length === 0) {
             container.innerHTML = '<div class="info-msg">Nikt aktualnie nie przebywa na kanałach głosowych.</div>';
@@ -467,7 +475,7 @@
                         wybraniGracze.add(g.name);
                     }
                 });
-                renderujWszystko();
+                renderujWszystko(false);
             };
 
             header.appendChild(title);
@@ -507,23 +515,23 @@
         } else {
             wybraniGracze.add(nazwa);
         }
-        renderujWszystko();
+        renderujWszystko(false);
     }
 
-    function renderujWszystko() {
+    function renderujWszystko(widgetPotrzebny = false) {
         renderujLol();
-        renderujGlosowe();
+        renderujGlosowe(widgetPotrzebny);
         aktualizujLicznik();
     }
 
     function zaznaczWszystkichLol() {
         graczeLolData.forEach(g => wybraniGracze.add(g.name));
-        renderujWszystko();
+        renderujWszystko(false);
     }
 
     function odznaczWszystkichLol() {
         graczeLolData.forEach(g => wybraniGracze.delete(g.name));
-        renderujWszystko();
+        renderujWszystko(false);
     }
 
     function aktualizujLicznik() {
@@ -537,7 +545,7 @@
         let osoby = Array.from(wybraniGracze);
         
         if (osoby.length === 0) {
-            pokazBlad('Wybierz przynajmniej jedną osobę do losowania.');
+            alert('Wybierz przynajmniej jedną osobę do losowania.');
             return;
         }
         
@@ -545,12 +553,12 @@
         const liczbaDruzyn = parseInt(liczbaInput);
         
         if (isNaN(liczbaDruzyn) || liczbaDruzyn < 1) {
-            pokazBlad('Wprowadź poprawną liczbę drużyn.');
+            alert('Wprowadź poprawną liczbę drużyn.');
             return;
         }
         
         if (liczbaDruzyn > osoby.length) {
-            pokazBlad('Liczba drużyn nie może być większa niż liczba zaznaczonych osób.');
+            alert('Liczba drużyn nie może być większa niż liczba zaznaczonych osób.');
             return;
         }
         
@@ -584,14 +592,6 @@
             
             wynikDiv.appendChild(karta);
         });
-    }
-
-    function pokazBlad(wiadomosc) {
-        const wynikDiv = document.getElementById('wynik');
-        const blad = document.createElement('div');
-        blad.className = 'error-msg';
-        blad.textContent = wiadomosc;
-        wynikDiv.appendChild(blad);
     }
 
     pobierzDane();

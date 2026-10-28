@@ -1,151 +1,125 @@
 import os
-import asyncio
-import threading
 import requests
-import discord
 from flask import Flask, jsonify, render_template
 
 template_dir = 'templates' if os.path.exists(os.path.join(os.path.dirname(__file__), 'templates', 'index.html')) else '.'
 app = Flask(__name__, template_folder=template_dir)
 
-TOKEN = os.environ.get('DISCORD_TOKEN')
-guild_env = os.environ.get('GUILD_ID', '')
-GUILD_ID = int(guild_env) if guild_env.isdigit() else None
+TOKEN = os.environ.get('DISCORD_TOKEN', '').strip()
+guild_env = os.environ.get('GUILD_ID', '').strip()
+GUILD_ID = guild_env if guild_env else None
 ROLE_NAME = 'League of Legends'
-
-intents = discord.Intents.default()
-intents.voice_states = True
-client = discord.Client(intents=intents)
-
-def start_discord_bot():
-    if not TOKEN:
-        return
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(client.start(TOKEN))
-    except Exception:
-        pass
-
-bot_thread = threading.Thread(target=start_discord_bot, daemon=True)
-bot_thread.start()
 
 @app.route('/api/dane')
 def get_dane():
     if not TOKEN:
-        return jsonify({'lol_gracze': [], 'kanaly_glosowe': []})
+        return jsonify({'lol_gracze': [], 'kanaly_glosowe': [], 'widget_potrzebny': False})
 
     headers = {'Authorization': f'Bot {TOKEN}'}
-    guild_id_str = str(GUILD_ID) if GUILD_ID else None
+    guild_id = GUILD_ID
 
-    if not guild_id_str:
+    if not guild_id:
         try:
-            g_res = requests.get('https://discord.com/api/v10/users/@me/guilds', headers=headers, timeout=4)
+            g_res = requests.get('https://discord.com/api/v10/users/@me/guilds', headers=headers, timeout=6)
             if g_res.status_code == 200:
                 guilds = g_res.json()
-                if guilds:
-                    guild_id_str = str(guilds[0]['id'])
+                if guilds and isinstance(guilds, list):
+                    guild_id = str(guilds[0].get('id'))
         except Exception:
             pass
 
-    if not guild_id_str:
-        return jsonify({'lol_gracze': [], 'kanaly_glosowe': []})
+    if not guild_id:
+        return jsonify({'lol_gracze': [], 'kanaly_glosowe': [], 'widget_potrzebny': False})
 
+    roles = []
     try:
-        roles_res = requests.get(f'https://discord.com/api/v10/guilds/{guild_id_str}/roles', headers=headers, timeout=4)
-        roles = roles_res.json() if roles_res.status_code == 200 else []
+        roles_res = requests.get(f'https://discord.com/api/v10/guilds/{guild_id}/roles', headers=headers, timeout=6)
+        if roles_res.status_code == 200:
+            roles = roles_res.json()
     except Exception:
         roles = []
 
     target_role_id = None
-    for r in roles:
-        name = r.get('name', '').strip().lower()
-        if name == ROLE_NAME.lower() or name == 'lol':
-            target_role_id = r.get('id')
-            break
+    if isinstance(roles, list):
+        for r in roles:
+            name = str(r.get('name', '')).strip().lower()
+            if name == ROLE_NAME.lower() or name == 'lol':
+                target_role_id = str(r.get('id'))
+                break
 
+    members = []
     try:
-        members_res = requests.get(f'https://discord.com/api/v10/guilds/{guild_id_str}/members?limit=1000', headers=headers, timeout=4)
-        members = members_res.json() if members_res.status_code == 200 else []
+        members_res = requests.get(f'https://discord.com/api/v10/guilds/{guild_id}/members?limit=1000', headers=headers, timeout=8)
+        if members_res.status_code == 200:
+            members = members_res.json()
     except Exception:
         members = []
 
     lol_gracze = []
     lol_ids = set()
 
-    if target_role_id:
+    if target_role_id and isinstance(members, list):
         for m in members:
-            if target_role_id in m.get('roles', []):
-                uid = str(m.get('user', {}).get('id'))
-                nick = m.get('nick') or m.get('user', {}).get('global_name') or m.get('user', {}).get('username')
+            user_data = m.get('user') or {}
+            uid = str(user_data.get('id', ''))
+            roles_list = [str(x) for x in m.get('roles', [])]
+
+            if target_role_id in roles_list:
+                nick = m.get('nick') or user_data.get('global_name') or user_data.get('username')
                 if nick and uid:
-                    lol_gracze.append({'id': uid, 'name': nick})
+                    lol_gracze.append({'id': uid, 'name': str(nick)})
                     lol_ids.add(uid)
 
     lol_gracze.sort(key=lambda x: x['name'].lower())
 
     kanaly_glosowe = []
+    widget_potrzebny = False
 
-    if client.is_ready():
-        guild = None
-        if GUILD_ID:
-            guild = client.get_guild(GUILD_ID)
-        if not guild and client.guilds:
-            guild = client.guilds[0]
+    try:
+        w_res = requests.get(f'https://discord.com/api/v10/guilds/{guild_id}/widget.json', timeout=6)
+        if w_res.status_code == 200:
+            w_data = w_res.json()
+            channels = w_data.get('channels', []) or []
+            w_members = w_data.get('members', []) or []
 
-        if guild:
-            for ch in guild.voice_channels:
-                ludzie = []
-                for m in ch.members:
-                    if not m.bot:
-                        uid = str(m.id)
-                        nick = m.display_name
-                        ludzie.append({
-                            'id': uid,
-                            'name': nick,
-                            'has_role': (uid in lol_ids)
-                        })
-                if ludzie:
-                    ludzie.sort(key=lambda x: (not x['has_role'], x['name'].lower()))
-                    kanaly_glosowe.append({
-                        'id': str(ch.id),
-                        'nazwa': ch.name,
-                        'gracze': ludzie
+            ch_map = {}
+            for c in channels:
+                cid = str(c.get('id'))
+                ch_map[cid] = {
+                    'id': cid,
+                    'nazwa': str(c.get('name', 'Kanał')),
+                    'gracze': []
+                }
+
+            for wm in w_members:
+                cid = str(wm.get('channel_id') or '')
+                if cid:
+                    if cid not in ch_map:
+                        ch_map[cid] = {'id': cid, 'nazwa': 'Kanał głosowy', 'gracze': []}
+
+                    uid = str(wm.get('id', ''))
+                    nick = wm.get('nick') or wm.get('username') or 'Gracz'
+                    has_role = uid in lol_ids
+
+                    ch_map[cid]['gracze'].append({
+                        'id': uid,
+                        'name': str(nick),
+                        'has_role': has_role
                     })
 
-    if not kanaly_glosowe:
-        try:
-            w_res = requests.get(f'https://discord.com/api/v10/guilds/{guild_id_str}/widget.json', timeout=3)
-            if w_res.status_code == 200:
-                w_data = w_res.json()
-                ch_list = w_data.get('channels', [])
-                m_list = w_data.get('members', [])
-
-                ch_map = {str(c['id']): {'id': str(c['id']), 'nazwa': c['name'], 'gracze': []} for c in ch_list}
-
-                for m in m_list:
-                    ch_id = str(m.get('channel_id') or '')
-                    if ch_id:
-                        if ch_id not in ch_map:
-                            ch_map[ch_id] = {'id': ch_id, 'nazwa': 'Kanał głosowy', 'gracze': []}
-                        uid = str(m.get('id'))
-                        nick = m.get('nick') or m.get('username')
-                        ch_map[ch_id]['gracze'].append({
-                            'id': uid,
-                            'name': nick,
-                            'has_role': (uid in lol_ids)
-                        })
-
-                for ch in ch_map.values():
-                    if ch['gracze']:
-                        ch['gracze'].sort(key=lambda x: (not x['has_role'], x['name'].lower()))
-                        kanaly_glosowe.append(ch)
-        except Exception:
-            pass
+            for ch in ch_map.values():
+                if ch['gracze']:
+                    ch['gracze'].sort(key=lambda x: (not x['has_role'], x['name'].lower()))
+                    kanaly_glosowe.append(ch)
+        else:
+            widget_potrzebny = True
+    except Exception:
+        widget_potrzebny = True
 
     return jsonify({
         'lol_gracze': lol_gracze,
-        'kanaly_glosowe': kanaly_glosowe
+        'kanaly_glosowe': kanaly_glosowe,
+        'widget_potrzebny': widget_potrzebny
     })
 
 @app.route('/')
